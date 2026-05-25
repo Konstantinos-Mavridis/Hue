@@ -15,7 +15,7 @@ import android.content.Context
 @OptIn(ExperimentalCoroutinesApi::class)
 class CaptureViewModelTest {
 
-    private val testDispatcher = TestCoroutineDispatcher()
+    private val testDispatcher = UnconfinedTestDispatcher()
     private val mockContext    = mockk<Context>(relaxed = true)
     private lateinit var viewModel: CaptureViewModel
 
@@ -26,7 +26,6 @@ class CaptureViewModelTest {
 
     @After fun tearDown() {
         Dispatchers.resetMain()
-        testDispatcher.cleanupTestCoroutines()
         unmockkAll()
     }
 

@@ -93,6 +93,7 @@ fun HueNavGraph(
     }
 }
 
+@Suppress("UNUSED_PARAMETER")
 @Composable
 private fun HistoryScanDetailScreen(scanId: Long, onBack: () -> Unit) {
     // Placeholder — in a full implementation this would show the saved analysis

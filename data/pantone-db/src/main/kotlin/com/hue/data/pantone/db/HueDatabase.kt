@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 @Database(
     entities = [PantoneFhiEntity::class, ScanHistoryEntity::class],
     version = 1,
-    exportSchema = true
+    exportSchema = false
 )
 abstract class HueDatabase : RoomDatabase() {
     abstract fun pantoneDao(): PantoneDao

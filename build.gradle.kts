@@ -57,13 +57,15 @@ tasks.register<JacocoReport>("jacocoFullReport") {
 
     val classDirs = coverageModules.flatMap { modulePath ->
         val sub = project(modulePath)
-        fileTree("${sub.buildDir}/tmp/kotlin-classes/debug") { exclude(jacocoAggregateExcludes) } +
-        fileTree("${sub.buildDir}/intermediates/javac/debug") { exclude(jacocoAggregateExcludes) }
+        val buildDir = sub.layout.buildDirectory.get().asFile
+        fileTree("$buildDir/tmp/kotlin-classes/debug") { exclude(jacocoAggregateExcludes) } +
+        fileTree("$buildDir/intermediates/javac/debug") { exclude(jacocoAggregateExcludes) }
     }
 
     val execFiles = coverageModules.flatMap { modulePath ->
         val sub = project(modulePath)
-        fileTree("${sub.buildDir}/jacoco") { include("**/*.exec") }
+        val buildDir = sub.layout.buildDirectory.get().asFile
+        fileTree("$buildDir/jacoco") { include("**/*.exec") }
     }
 
     sourceDirectories.setFrom(sourceDirs)

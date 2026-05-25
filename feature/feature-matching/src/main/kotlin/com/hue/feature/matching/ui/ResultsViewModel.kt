@@ -29,7 +29,7 @@ sealed class ResultsUiState {
 class ResultsViewModel @Inject constructor(
     private val analyseFabric: AnalyseFabricUseCase,
     private val saveScan: SaveScanUseCase,
-    savedStateHandle: SavedStateHandle
+    @Suppress("UNUSED_PARAMETER") savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ResultsUiState>(ResultsUiState.Idle)

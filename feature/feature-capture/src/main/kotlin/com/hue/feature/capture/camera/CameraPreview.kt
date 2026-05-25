@@ -3,7 +3,10 @@ package com.hue.feature.capture.camera
 import android.content.Context
 import android.util.Size
 import androidx.camera.core.*
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
@@ -35,14 +38,17 @@ fun CameraPreviewView(
 
     LaunchedEffect(Unit) {
         val cameraProvider = context.getCameraProvider()
+        val resolutionSelector = ResolutionSelector.Builder()
+            .setResolutionStrategy(ResolutionStrategy(Size(1080, 1440), ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER))
+            .build()
         val preview = Preview.Builder()
-            .setTargetResolution(Size(1080, 1440))
+            .setResolutionSelector(resolutionSelector)
             .build()
             .also { it.setSurfaceProvider(previewView.surfaceProvider) }
 
         val imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-            .setTargetResolution(Size(1080, 1440))
+            .setResolutionSelector(resolutionSelector)
             .build()
 
         imageCaptureUseCase = imageCapture
@@ -143,6 +149,7 @@ class CaptureController {
     }
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider {
     return kotlinx.coroutines.suspendCancellableCoroutine { cont ->
         ProcessCameraProvider.getInstance(this).also { future ->

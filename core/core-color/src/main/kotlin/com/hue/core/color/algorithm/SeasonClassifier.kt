@@ -40,7 +40,7 @@ object SeasonClassifier {
         val temperature = inferTemperature(lab, pantoneTempHint, thresholds)
 
         // Fuzzy scores per season: higher is better (each component contributes 0–1)
-        val scores = computeSeasonScores(lab, lightness, chroma, temperature, thresholds)
+        val scores = computeSeasonScores(lab, temperature, thresholds)
 
         val sorted = scores.entries.sortedByDescending { it.value }
         val primary   = sorted[0].key
@@ -48,7 +48,7 @@ object SeasonClassifier {
 
         val totalScore = sorted.sumOf { it.value }.coerceAtLeast(0.001)
         val primaryWeight = sorted[0].value / totalScore
-        val confidence = computeConfidence(primaryWeight, lab, lightness, chroma, temperature, thresholds)
+        val confidence = computeConfidence(primaryWeight, lab, temperature, thresholds)
 
         return SeasonResult(
             primarySeason  = primary,
@@ -106,8 +106,6 @@ object SeasonClassifier {
 
     private fun computeSeasonScores(
         lab: LabColor,
-        lightness: LightnessCategory,
-        chroma: ChromaCategory,
         temperature: ColorTemperature,
         t: SeasonThresholds
     ): Map<Season, Double> {
@@ -147,8 +145,6 @@ object SeasonClassifier {
     private fun computeConfidence(
         primaryWeight: Double,
         lab: LabColor,
-        lightness: LightnessCategory,
-        chroma: ChromaCategory,
         temperature: ColorTemperature,
         t: SeasonThresholds
     ): Double {

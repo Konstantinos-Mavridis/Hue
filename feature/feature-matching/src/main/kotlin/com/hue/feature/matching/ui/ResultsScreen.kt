@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -112,7 +113,7 @@ private fun ResultsContent(
             TopAppBar(
                 title = { Text("Results") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Back") }
+                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
                 },
                 actions = {
                     if (!state.isSaved) {
@@ -168,17 +169,17 @@ private fun ResultsContent(
                 )
             }
 
-            Divider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
             // Season card
             SeasonSection(analysis = analysis)
 
-            Divider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
             // Warm/Cool axis
             WarmCoolSection(analysis = analysis)
 
-            Divider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
             // Advanced details (collapsible)
             AdvancedDetailsSection(
@@ -324,7 +325,7 @@ private fun ConfidenceBar(confidence: Double) {
             Text("$pct%", style = MaterialTheme.typography.labelMedium, color = barColor)
         }
         LinearProgressIndicator(
-            progress = confidence.toFloat().coerceIn(0f, 1f),
+            progress = { confidence.toFloat().coerceIn(0f, 1f) },
             modifier = Modifier.fillMaxWidth(),
             color = barColor,
             trackColor = MaterialTheme.colorScheme.surfaceVariant
@@ -438,5 +439,3 @@ private fun Season.toUi(): SeasonUi = when (this) {
     Season.WINTER -> SeasonUi.WINTER
 }
 
-private val com.hue.core.color.model.RgbColor.hex: String
-    get() = "#%02X%02X%02X".format(r.coerceIn(0, 255), g.coerceIn(0, 255), b.coerceIn(0, 255))

@@ -187,7 +187,7 @@ private fun HistoryItem(
             .background(MaterialTheme.colorScheme.surface)
     )
 
-    Divider(modifier = Modifier.padding(start = 72.dp))
+    HorizontalDivider(modifier = Modifier.padding(start = 72.dp))
 
     if (showDeleteConfirm) {
         AlertDialog(

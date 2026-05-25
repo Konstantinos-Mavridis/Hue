@@ -83,8 +83,6 @@ class AnalyseFabricUseCase @Inject constructor(
     private fun estimateIlluminant(path: String, bitmap: Bitmap) =
         try {
             val exif = ExifInterface(path)
-            val wb = exif.getAttribute(ExifInterface.TAG_WHITE_BALANCE)
-            // EXIF white balance: 0 = auto, 1 = manual
             val colorTemp = exif.getAttribute("ColorTemperature")?.toIntOrNull()
             when {
                 colorTemp != null && colorTemp < 3500 -> BradfordAdaptation.illuminants["A"]!!
