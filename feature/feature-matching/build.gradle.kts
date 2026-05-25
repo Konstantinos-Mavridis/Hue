@@ -1,0 +1,37 @@
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.hilt)
+}
+
+android {
+    namespace = "com.hue.feature.matching"
+    compileSdk = 34
+    defaultConfig { minSdk = 26 }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = "17" }
+    buildFeatures { compose = true }
+    composeOptions { kotlinCompilerExtensionVersion = "1.5.8" }
+}
+
+dependencies {
+    implementation(project(":core:core-color"))
+    implementation(project(":core:core-design"))
+    implementation(project(":domain"))
+
+    implementation(libs.core.ktx)
+    implementation(platform(libs.compose.bom))
+    implementation(libs.bundles.compose)
+    implementation(libs.bundles.lifecycle)
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.coil.compose)
+    kapt(libs.hilt.compiler)
+
+    testImplementation(libs.junit)
+    debugImplementation(libs.compose.ui.tooling)
+}

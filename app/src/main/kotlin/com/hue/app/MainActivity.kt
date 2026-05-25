@@ -1,0 +1,24 @@
+package com.hue.app
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.hue.app.navigation.HueNavGraph
+import com.hue.core.design.theme.HueTheme
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            HueTheme {
+                HueNavGraph()
+            }
+        }
+    }
+}
