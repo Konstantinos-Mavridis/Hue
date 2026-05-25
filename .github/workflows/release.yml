@@ -67,11 +67,9 @@ jobs:
     name: Build release APK
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # Only runs when secrets are configured (skip on forks/PRs without secrets)
     if: >
       github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_type == 'release' &&
-      secrets.KEYSTORE_FILE != ''
+      github.event.inputs.build_type == 'release'
     needs: build-debug-apk
 
     steps:
