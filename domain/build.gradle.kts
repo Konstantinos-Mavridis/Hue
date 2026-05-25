@@ -35,6 +35,7 @@ dependencies {
     implementation(libs.core.ktx)
     implementation(libs.coroutines.core)
     implementation(libs.hilt.android)
+    implementation(libs.exifinterface)
     implementation(project(":core:core-color"))
 
     testImplementation(libs.junit)
