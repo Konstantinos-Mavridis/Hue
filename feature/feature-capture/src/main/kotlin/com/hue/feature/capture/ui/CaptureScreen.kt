@@ -36,7 +36,10 @@ fun CaptureScreen(
 
     val cameraPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { granted -> viewModel.onCameraPermissionResult(granted) }
+    ) { granted ->
+        viewModel.onCameraPermissionResult(granted)
+        if (granted) viewModel.requestCamera()
+    }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
@@ -50,7 +53,6 @@ fun CaptureScreen(
         CaptureMode.HOME -> HomeContent(
             onScanFabric = {
                 cameraPermission.launch(Manifest.permission.CAMERA)
-                viewModel.requestCamera()
             },
             onChooseGallery = {
                 galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
