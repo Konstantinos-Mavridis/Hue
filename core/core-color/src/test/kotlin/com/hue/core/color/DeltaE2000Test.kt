@@ -78,7 +78,7 @@ class DeltaE2000Test {
     }
 
     @Test
-    fun `symmetric: deltaE(a,b) equals deltaE(b,a)`() {
+    fun `symmetric deltaE(a,b) equals deltaE(b,a)`() {
         val a = LabColor(45.0, 30.0, -20.0)
         val b = LabColor(60.0, -10.0, 40.0)
         assertThat(abs(DeltaE2000.compute(a, b) - DeltaE2000.compute(b, a))).isLessThan(0.001)
