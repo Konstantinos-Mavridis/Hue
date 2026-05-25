@@ -85,13 +85,15 @@ class ColorConverterEdgeCasesTest {
     @Test
     fun `blue LAB hue angle wraps correctly to 0-360`() {
         val lab = ColorConverter.rgbToLab(RgbColor(0, 0, 255))
-        assertThat(lab.hueAngle).isIn(com.google.common.collect.Range.closed(0.0, 360.0))
+        assertThat(lab.hueAngle).isAtLeast(0.0)
+        assertThat(lab.hueAngle).isAtMost(360.0)
     }
 
     @Test
     fun `hue angle for negative a positive b is in second quadrant`() {
         val lab = LabColor(50.0, -20.0, 30.0)  // b > 0, a < 0 → hue ~124°
-        assertThat(lab.hueAngle).isIn(com.google.common.collect.Range.closed(90.0, 180.0))
+        assertThat(lab.hueAngle).isAtLeast(90.0)
+        assertThat(lab.hueAngle).isAtMost(180.0)
     }
 
     // ── HSL conversion ────────────────────────────────────────────────────

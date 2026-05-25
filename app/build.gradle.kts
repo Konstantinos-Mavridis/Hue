@@ -54,6 +54,7 @@ dependencies {
     implementation(project(":feature:feature-history"))
 
     implementation(libs.core.ktx)
+    implementation(libs.material)
     implementation(libs.splash)
     implementation(platform(libs.compose.bom))
     implementation(libs.bundles.compose)
