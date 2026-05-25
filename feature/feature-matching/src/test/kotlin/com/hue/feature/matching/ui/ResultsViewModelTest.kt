@@ -115,7 +115,7 @@ class ResultsViewModelTest {
         coEvery { mockAnalyse(any()) } returns Result.failure(RuntimeException())
 
         viewModel.analyse("/path.jpg")
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         val state = viewModel.uiState.value
         assertThat(state).isInstanceOf(ResultsUiState.Error::class.java)
@@ -128,7 +128,7 @@ class ResultsViewModelTest {
     @Test fun `selectMatch updates selectedMatchIndex`() = runTest {
         coEvery { mockAnalyse(any()) } returns Result.success(makeAnalysis())
         viewModel.analyse("/tmp/test.jpg")
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         viewModel.selectMatch(1)
 
@@ -146,7 +146,7 @@ class ResultsViewModelTest {
     @Test fun `toggleAdvanced flips showAdvanced flag`() = runTest {
         coEvery { mockAnalyse(any()) } returns Result.success(makeAnalysis())
         viewModel.analyse("/tmp/test.jpg")
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         val before = (viewModel.uiState.value as ResultsUiState.Success).showAdvanced
         viewModel.toggleAdvanced()
@@ -157,7 +157,7 @@ class ResultsViewModelTest {
     @Test fun `toggleAdvanced twice returns to original state`() = runTest {
         coEvery { mockAnalyse(any()) } returns Result.success(makeAnalysis())
         viewModel.analyse("/tmp/test.jpg")
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         viewModel.toggleAdvanced()
         viewModel.toggleAdvanced()
@@ -170,10 +170,10 @@ class ResultsViewModelTest {
         coEvery { mockAnalyse(any()) } returns Result.success(makeAnalysis())
         coEvery { mockSave(any()) } returns 1L
         viewModel.analyse("/tmp/test.jpg")
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         viewModel.saveToHistory()
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         assertThat((viewModel.uiState.value as ResultsUiState.Success).isSaved).isTrue()
     }
@@ -182,12 +182,12 @@ class ResultsViewModelTest {
         coEvery { mockAnalyse(any()) } returns Result.success(makeAnalysis())
         coEvery { mockSave(any()) } returns 1L
         viewModel.analyse("/tmp/test.jpg")
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         viewModel.saveToHistory()
         viewModel.saveToHistory()
         viewModel.saveToHistory()
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         coVerify(exactly = 1) { mockSave(any()) }
     }

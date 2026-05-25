@@ -56,7 +56,7 @@ class HistoryViewModelTest {
     @Test fun `initial state has empty scans and isLoading false after load`() = runTest {
         every { mockGetHistory() } returns flowOf(emptyList())
         val vm = HistoryViewModel(mockGetHistory, mockDelete)
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         assertThat(vm.uiState.value.scans).isEmpty()
         assertThat(vm.uiState.value.isLoading).isFalse()
@@ -66,7 +66,7 @@ class HistoryViewModelTest {
         val scans = listOf(makeScan(1), makeScan(2), makeScan(3))
         every { mockGetHistory() } returns flowOf(scans)
         val vm = HistoryViewModel(mockGetHistory, mockDelete)
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         assertThat(vm.uiState.value.scans).hasSize(3)
     }
@@ -81,7 +81,7 @@ class HistoryViewModelTest {
         )
         every { mockGetHistory() } returns flowOf(scans)
         val vm = HistoryViewModel(mockGetHistory, mockDelete)
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         vm.setFilter(Season.AUTUMN)
 
@@ -95,7 +95,7 @@ class HistoryViewModelTest {
         val scans = listOf(makeScan(1, Season.SPRING), makeScan(2, Season.WINTER))
         every { mockGetHistory() } returns flowOf(scans)
         val vm = HistoryViewModel(mockGetHistory, mockDelete)
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         vm.setFilter(Season.SPRING)
         vm.setFilter(null)
@@ -107,7 +107,7 @@ class HistoryViewModelTest {
         val scans = listOf(makeScan(1, Season.AUTUMN), makeScan(2, Season.SUMMER))
         every { mockGetHistory() } returns flowOf(scans)
         val vm = HistoryViewModel(mockGetHistory, mockDelete)
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         vm.setFilter(Season.WINTER)
         assertThat(vm.uiState.value.filteredScans).isEmpty()
@@ -119,7 +119,7 @@ class HistoryViewModelTest {
         val scans = listOf(makeScan(1), makeScan(2))
         every { mockGetHistory() } returns flowOf(scans)
         val vm = HistoryViewModel(mockGetHistory, mockDelete)
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         vm.setSearch("")
         assertThat(vm.uiState.value.filteredScans).hasSize(2)
@@ -130,7 +130,7 @@ class HistoryViewModelTest {
         val winterScan  = makeScan(2, Season.WINTER)
         every { mockGetHistory() } returns flowOf(listOf(autumnScan, winterScan))
         val vm = HistoryViewModel(mockGetHistory, mockDelete)
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         vm.setSearch("Autumn")
         assertThat(vm.uiState.value.filteredScans).hasSize(1)
@@ -141,7 +141,7 @@ class HistoryViewModelTest {
         val scan = makeScan(1, Season.SPRING)
         every { mockGetHistory() } returns flowOf(listOf(scan))
         val vm = HistoryViewModel(mockGetHistory, mockDelete)
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         vm.setSearch("spring")
         assertThat(vm.uiState.value.filteredScans).hasSize(1)
@@ -160,7 +160,7 @@ class HistoryViewModelTest {
         )
         every { mockGetHistory() } returns flowOf(scans)
         val vm = HistoryViewModel(mockGetHistory, mockDelete)
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         vm.setFilter(Season.AUTUMN)
         vm.setSearch("Autumn")
@@ -174,10 +174,10 @@ class HistoryViewModelTest {
         every { mockGetHistory() } returns flowOf(listOf(makeScan(10L)))
         coEvery { mockDelete(10L) } just Runs
         val vm = HistoryViewModel(mockGetHistory, mockDelete)
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         vm.delete(10L)
-        mainDispatcherRule.testDispatcher.advanceUntilIdle()
+        advanceUntilIdle()
 
         coVerify { mockDelete(10L) }
     }
