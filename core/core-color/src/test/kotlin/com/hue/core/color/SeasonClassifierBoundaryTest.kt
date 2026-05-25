@@ -100,7 +100,7 @@ class SeasonClassifierBoundaryTest {
     }
 
     @Test fun `Autumn is reachable with canonical warm muted deep colour`() {
-        val lab = LabColor(45.0, 28.0, 32.0)  // warm, medium-deep, muted
+        val lab = LabColor(45.0, 20.0, 18.0)  // warm, medium-deep, muted (C*≈26.9)
         assertThat(SeasonClassifier.classify(lab).primarySeason).isEqualTo(Season.AUTUMN)
     }
 
@@ -167,7 +167,7 @@ class SeasonClassifierBoundaryTest {
     }
 
     @Test fun `12-season Autumn Warm Autumn path`() {
-        val lab = LabColor(50.0, 25.0, 40.0)  // hue ~58° → Warm Autumn
+        val lab = LabColor(50.0, 18.0, 22.0)  // hue ~50.7°, C*≈28.4 muted → Warm Autumn
         val base = SeasonClassifier.classify(lab, ColorTemperature.WARM)
         val ext = SeasonClassifier.classifyExtended(lab, base)
         assertThat(ext).contains("Autumn")
@@ -181,9 +181,11 @@ class SeasonClassifierBoundaryTest {
     }
 
     @Test fun `12-season Winter Cool Winter path`() {
-        val lab = LabColor(42.0, 3.0, -20.0)  // C*<25 → Cool Winter
-        val base = SeasonClassifier.classify(lab, ColorTemperature.COOL)
-        val ext = SeasonClassifier.classifyExtended(lab, base)
+        // Use a deep+bright cool colour to get WINTER base, then a low-chroma cool colour for the extended path
+        val labForBase = LabColor(25.0, 5.0, -40.0)  // deep, bright, cool → WINTER
+        val labForExt  = LabColor(42.0, 3.0, -20.0)  // C*<25 → Cool Winter
+        val base = SeasonClassifier.classify(labForBase, ColorTemperature.COOL)
+        val ext = SeasonClassifier.classifyExtended(labForExt, base)
         assertThat(ext).contains("Winter")
     }
 

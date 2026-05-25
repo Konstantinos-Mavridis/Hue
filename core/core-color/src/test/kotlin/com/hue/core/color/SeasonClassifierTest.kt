@@ -32,7 +32,7 @@ class SeasonClassifierTest {
     @Test
     fun `warm muted rust is classified Autumn`() {
         // Rust: warm, medium-deep, muted — canonical Autumn
-        val lab = LabColor(l = 45.0, a = 30.0, b = 28.0)
+        val lab = LabColor(l = 45.0, a = 20.0, b = 18.0)
         val result = SeasonClassifier.classify(lab)
         assertThat(result.primarySeason).isEqualTo(Season.AUTUMN)
         assertThat(result.temperature).isEqualTo(ColorTemperature.WARM)

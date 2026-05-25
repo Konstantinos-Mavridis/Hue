@@ -9,13 +9,14 @@ data class RgbColor(val r: Int, val g: Int, val b: Int) {
     val hex: String get() = "#%02X%02X%02X".format(r.coerceIn(0, 255), g.coerceIn(0, 255), b.coerceIn(0, 255))
 
     @ColorInt
-    fun toColorInt(): Int = android.graphics.Color.rgb(r, g, b)
+    fun toColorInt(): Int =
+        (0xFF shl 24) or (r.coerceIn(0, 255) shl 16) or (g.coerceIn(0, 255) shl 8) or b.coerceIn(0, 255)
 
     companion object {
         fun fromColorInt(@ColorInt color: Int) = RgbColor(
-            android.graphics.Color.red(color),
-            android.graphics.Color.green(color),
-            android.graphics.Color.blue(color)
+            (color shr 16) and 0xFF,
+            (color shr 8) and 0xFF,
+            color and 0xFF
         )
 
         fun fromHex(hex: String): RgbColor {

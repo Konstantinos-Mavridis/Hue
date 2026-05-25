@@ -53,7 +53,7 @@ class BradfordAdaptationTest {
     fun `estimateIlluminant detects cool cast`() {
         // Cool scene: low R, high B
         val illuminant = BradfordAdaptation.estimateIlluminant(100.0, 150.0, 210.0)
-        assertThat(illuminant.z).isGreaterThan(illuminant.x)  // F2 or cool: higher Z
+        assertThat(illuminant).isEqualTo(BradfordAdaptation.illuminants["F2"])
     }
 
     @Test

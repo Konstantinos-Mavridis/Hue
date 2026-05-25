@@ -26,6 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hue.core.design.theme.HueShapes
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CropScreen(
     imagePath: String,

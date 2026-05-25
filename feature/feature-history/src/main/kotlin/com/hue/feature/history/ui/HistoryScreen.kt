@@ -28,6 +28,7 @@ import com.hue.domain.model.FabricAnalysis
 import java.text.SimpleDateFormat
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
     onScanSelected: (Long) -> Unit,

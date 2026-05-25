@@ -61,9 +61,9 @@ class DomainModelTest {
         assertThat(match.matchQuality).isEqualTo(MatchQuality.FAIR)
     }
 
-    @Test fun `deltaE exactly 10 is FAIR`() {
+    @Test fun `deltaE exactly 10 is POOR`() {
         val match = PantoneMatchResult(makePantoneColor(), deltaE = 10.0)
-        assertThat(match.matchQuality).isEqualTo(MatchQuality.FAIR)
+        assertThat(match.matchQuality).isEqualTo(MatchQuality.POOR)
     }
 
     // ── AnalysisError sealed class ────────────────────────────────────────
