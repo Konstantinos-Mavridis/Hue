@@ -5,8 +5,7 @@ import com.google.common.truth.Truth.assertThat
 import com.hue.core.color.algorithm.KMeansDominantColor
 import com.hue.core.color.model.LabColor
 import com.hue.core.color.model.RgbColor
-import io.mockk.every
-import io.mockk.mockk
+import io.mockk.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
