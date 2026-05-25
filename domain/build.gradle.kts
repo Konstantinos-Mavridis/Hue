@@ -34,6 +34,7 @@ android {
 dependencies {
     implementation(libs.core.ktx)
     implementation(libs.coroutines.core)
+    implementation(libs.hilt.android)
     implementation(project(":core:core-color"))
 
     testImplementation(libs.junit)

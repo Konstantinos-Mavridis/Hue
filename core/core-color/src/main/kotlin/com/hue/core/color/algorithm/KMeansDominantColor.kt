@@ -168,6 +168,7 @@ object KMeansDominantColor {
 
     /** Assess if a region has excessive highlights (overexposure). */
     fun hasGlare(labPixels: List<LabColor>): Boolean {
+        if (labPixels.isEmpty()) return false
         val overexposed = labPixels.count { it.l > 90.0 }
         return overexposed.toDouble() / labPixels.size > 0.20
     }
