@@ -52,7 +52,7 @@ fun CameraPreviewView(
             .build()
 
         imageCaptureUseCase = imageCapture
-        captureController.bind(imageCapture, context.mainExecutor, onImageCaptured, onError)
+        captureController.bind(imageCapture, ContextCompat.getMainExecutor(context), onImageCaptured, onError)
 
         cameraProvider.unbindAll()
         cameraProvider.bindToLifecycle(
