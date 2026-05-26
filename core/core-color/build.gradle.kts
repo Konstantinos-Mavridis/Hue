@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.hue.core.color"
-    compileSdk = 34
+    compileSdk = 36
     defaultConfig { minSdk = 26 }
 
     compileOptions {

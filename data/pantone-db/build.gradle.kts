@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.hue.data.pantone"
-    compileSdk = 34
+    compileSdk = 36
     defaultConfig { minSdk = 26 }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

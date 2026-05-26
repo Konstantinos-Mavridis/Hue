@@ -30,7 +30,7 @@ abstract class HueDatabase : RoomDatabase() {
                         seeder.seedDirect(db)
                     }
                 })
-                .fallbackToDestructiveMigration()
+                .fallbackToDestructiveMigration(dropAllTables = true)
                 .build()
         }
     }

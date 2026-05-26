@@ -34,7 +34,7 @@ enum class CropWarning {
 
 @HiltViewModel
 class CropViewModel @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CropUiState())
