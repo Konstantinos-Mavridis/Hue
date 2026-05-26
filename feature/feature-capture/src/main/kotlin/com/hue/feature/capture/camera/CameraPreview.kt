@@ -6,7 +6,6 @@ import androidx.camera.core.*
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
@@ -149,11 +148,10 @@ class CaptureController {
     }
 }
 
-@OptIn(ExperimentalCoroutinesApi::class)
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider {
     return kotlinx.coroutines.suspendCancellableCoroutine { cont ->
         ProcessCameraProvider.getInstance(this).also { future ->
-            future.addListener({ cont.resume(future.get()) }, ContextCompat.getMainExecutor(this))
+            future.addListener({ cont.resumeWith(Result.success(future.get())) }, ContextCompat.getMainExecutor(this))
         }
     }
 }

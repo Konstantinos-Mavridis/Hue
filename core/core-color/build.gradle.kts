@@ -21,6 +21,7 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             all { test ->
+                test.systemProperty("robolectric.sdk", "35")
                 test.extensions.configure<JacocoTaskExtension> {
                     isIncludeNoLocationClasses = true
                     excludes = listOf("jdk.internal.*")
