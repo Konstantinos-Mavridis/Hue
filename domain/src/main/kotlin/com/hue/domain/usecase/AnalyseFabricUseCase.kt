@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 class AnalyseFabricUseCase @Inject constructor(
     private val pantoneRepository: PantoneRepository,
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) {
     suspend operator fun invoke(input: AnalysisInput): Result<FabricAnalysis> =
         withContext(Dispatchers.Default) {

@@ -33,7 +33,7 @@ abstract class HueDatabase : RoomDatabase() {
                         }
                     }
                 })
-                .fallbackToDestructiveMigration()
+                .fallbackToDestructiveMigration(dropAllTables = true)
                 .build()
         }
     }
