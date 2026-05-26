@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hue.core.design.theme.HueShapes
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -174,6 +175,11 @@ private fun InteractiveCropView(
     }
 }
 
+private enum class DragZone { NONE, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, MOVE }
+
+private fun Offset.isNear(x: Float, y: Float, threshold: Float) =
+    abs(this.x - x) <= threshold && abs(this.y - y) <= threshold
+
 @Composable
 private fun CropOverlay(
     cropRect: RectF,
@@ -184,23 +190,74 @@ private fun CropOverlay(
 
     val w = imageSize.width.toFloat()
     val h = imageSize.height.toFloat()
+    val density = LocalDensity.current
+    val handleTouchPx = with(density) { 44.dp.toPx() }
+
+    // Always read the latest rect inside gesture callbacks without restarting the effect.
+    val currentRect by rememberUpdatedState(cropRect)
+    var dragZone by remember { mutableStateOf(DragZone.NONE) }
 
     Canvas(
         modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    val dx = dragAmount.x / w
-                    val dy = dragAmount.y / h
-                    val newRect = RectF(
-                        (cropRect.left + dx).coerceIn(0f, cropRect.right - 0.1f),
-                        (cropRect.top + dy).coerceIn(0f, cropRect.bottom - 0.1f),
-                        (cropRect.right + dx).coerceIn(cropRect.left + 0.1f, 1f),
-                        (cropRect.bottom + dy).coerceIn(cropRect.top + 0.1f, 1f)
-                    )
-                    onRectChange(newRect)
-                }
+                detectDragGestures(
+                    onDragStart = { offset ->
+                        val r = currentRect
+                        val left   = r.left * w
+                        val top    = r.top * h
+                        val right  = r.right * w
+                        val bottom = r.bottom * h
+                        // Corners take priority over interior.
+                        dragZone = when {
+                            offset.isNear(left,  top,    handleTouchPx) -> DragZone.TOP_LEFT
+                            offset.isNear(right, top,    handleTouchPx) -> DragZone.TOP_RIGHT
+                            offset.isNear(left,  bottom, handleTouchPx) -> DragZone.BOTTOM_LEFT
+                            offset.isNear(right, bottom, handleTouchPx) -> DragZone.BOTTOM_RIGHT
+                            offset.x in left..right && offset.y in top..bottom -> DragZone.MOVE
+                            else -> DragZone.NONE
+                        }
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        val r = currentRect
+                        val dx = dragAmount.x / w
+                        val dy = dragAmount.y / h
+                        val min = 0.1f
+                        val newRect: RectF? = when (dragZone) {
+                            DragZone.TOP_LEFT -> RectF(
+                                (r.left + dx).coerceIn(0f, r.right - min),
+                                (r.top  + dy).coerceIn(0f, r.bottom - min),
+                                r.right, r.bottom
+                            )
+                            DragZone.TOP_RIGHT -> RectF(
+                                r.left,
+                                (r.top   + dy).coerceIn(0f, r.bottom - min),
+                                (r.right + dx).coerceIn(r.left + min, 1f),
+                                r.bottom
+                            )
+                            DragZone.BOTTOM_LEFT -> RectF(
+                                (r.left   + dx).coerceIn(0f, r.right - min),
+                                r.top, r.right,
+                                (r.bottom + dy).coerceIn(r.top + min, 1f)
+                            )
+                            DragZone.BOTTOM_RIGHT -> RectF(
+                                r.left, r.top,
+                                (r.right  + dx).coerceIn(r.left + min, 1f),
+                                (r.bottom + dy).coerceIn(r.top  + min, 1f)
+                            )
+                            DragZone.MOVE -> {
+                                val rw = r.right - r.left
+                                val rh = r.bottom - r.top
+                                val newLeft = (r.left + dx).coerceIn(0f, 1f - rw)
+                                val newTop  = (r.top  + dy).coerceIn(0f, 1f - rh)
+                                RectF(newLeft, newTop, newLeft + rw, newTop + rh)
+                            }
+                            DragZone.NONE -> null
+                        }
+                        newRect?.let { onRectChange(it) }
+                    }
+                )
             }
     ) {
         val left   = cropRect.left * w
@@ -210,7 +267,7 @@ private fun CropOverlay(
 
         // Dim mask
         drawRect(Color.Black.copy(alpha = 0.5f))
-        // Clear crop area (approximate — just draw the border)
+        // Highlight crop area
         drawRect(
             color = Color.White.copy(alpha = 0.12f),
             topLeft = Offset(left, top),
@@ -223,12 +280,12 @@ private fun CropOverlay(
             size = androidx.compose.ui.geometry.Size(right - left, bottom - top),
             style = Stroke(width = 2.dp.toPx())
         )
-        // Handles
-        val hSize = 10.dp.toPx()
+        // Corner handles — 16 dp squares, centred on each corner
+        val hSize = 16.dp.toPx()
         listOf(
-            Offset(left - hSize / 2, top - hSize / 2),
-            Offset(right - hSize / 2, top - hSize / 2),
-            Offset(left - hSize / 2, bottom - hSize / 2),
+            Offset(left  - hSize / 2, top    - hSize / 2),
+            Offset(right - hSize / 2, top    - hSize / 2),
+            Offset(left  - hSize / 2, bottom - hSize / 2),
             Offset(right - hSize / 2, bottom - hSize / 2)
         ).forEach { pos ->
             drawRect(Color.White, topLeft = pos, size = androidx.compose.ui.geometry.Size(hSize, hSize))
