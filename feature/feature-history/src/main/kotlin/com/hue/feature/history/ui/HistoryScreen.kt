@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -140,7 +141,8 @@ private fun HistoryItem(
     val dominantColor = Color(
         android.graphics.Color.rgb(scan.dominantRgb.r, scan.dominantRgb.g, scan.dominantRgb.b)
     )
-    val dateStr = SimpleDateFormat("MMM d, yyyy · HH:mm", Locale.getDefault())
+    val locale = LocalLocale.current.platformLocale
+    val dateStr = SimpleDateFormat("MMM d, yyyy · HH:mm", locale)
         .format(Date(scan.timestamp))
     val bestMatch = scan.topMatches.firstOrNull()
 

@@ -64,7 +64,7 @@ tasks.register<JacocoReport>("jacocoFullReport") {
     val execFiles = coverageModules.flatMap { modulePath ->
         val sub = project(modulePath)
         val buildDir = sub.layout.buildDirectory.get().asFile
-        fileTree("$buildDir/jacoco") { include("**/*.exec") }
+        fileTree("$buildDir/outputs/unit_test_code_coverage/debugUnitTest") { include("**/*.exec") }
     }
 
     sourceDirectories.setFrom(sourceDirs)
