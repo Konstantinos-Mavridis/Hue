@@ -63,8 +63,13 @@ tasks.register<JacocoReport>("jacocoFullReport") {
         val buildDir = sub.layout.buildDirectory.get().asFile
         fileTree(buildDir) {
             include(
-                "tmp/kotlin-classes/debug/**/*.class",
+                // AGP 9.x / K2: Kotlin classes are compiled straight into this library JAR
+                "intermediates/compile_library_classes_jar/debug/classes.jar",
+                // Java source files (Room DAOs, etc.) — individual class files
                 "intermediates/javac/debug/**/*.class",
+                "intermediates/javac/debug/classes/**/*.class",
+                // Older AGP fallback paths
+                "tmp/kotlin-classes/debug/**/*.class",
                 "intermediates/kotlinc/debug/**/*.class",
                 "intermediates/kotlin_classes/debug/**/*.class"
             )
@@ -87,11 +92,13 @@ tasks.register<JacocoReport>("jacocoFullReport") {
     // Diagnostic: print what was found so CI logs show the actual paths.
     doFirst {
         val execCount = executionData.files.size
-        val classCount = classDirectories.asFileTree.files.size
-        logger.lifecycle("[jacocoFullReport] exec files : $execCount")
+        val classEntries = classDirectories.asFileTree.files
+        logger.lifecycle("[jacocoFullReport] exec files  : $execCount")
         executionData.files.sortedBy { it.absolutePath }
             .forEach { logger.lifecycle("  exec → $it (${it.length()} B)") }
-        logger.lifecycle("[jacocoFullReport] class files: $classCount")
+        logger.lifecycle("[jacocoFullReport] class entries: ${classEntries.size}")
+        classEntries.sortedBy { it.absolutePath }
+            .forEach { logger.lifecycle("  class → $it (${it.length()} B)") }
     }
 
     reports {
