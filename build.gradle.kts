@@ -1,8 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)     apply false
     alias(libs.plugins.android.library)         apply false
-    alias(libs.plugins.kotlin.android)          apply false
-    alias(libs.plugins.kotlin.kapt)             apply false
+    alias(libs.plugins.kotlin.compose)          apply false
     alias(libs.plugins.hilt)                    apply false
     alias(libs.plugins.ksp)                     apply false
     jacoco
@@ -57,13 +56,15 @@ tasks.register<JacocoReport>("jacocoFullReport") {
 
     val classDirs = coverageModules.flatMap { modulePath ->
         val sub = project(modulePath)
-        fileTree("${sub.buildDir}/tmp/kotlin-classes/debug") { exclude(jacocoAggregateExcludes) } +
-        fileTree("${sub.buildDir}/intermediates/javac/debug") { exclude(jacocoAggregateExcludes) }
+        val buildDir = sub.layout.buildDirectory.get().asFile
+        fileTree("$buildDir/tmp/kotlin-classes/debug") { exclude(jacocoAggregateExcludes) } +
+        fileTree("$buildDir/intermediates/javac/debug") { exclude(jacocoAggregateExcludes) }
     }
 
     val execFiles = coverageModules.flatMap { modulePath ->
         val sub = project(modulePath)
-        fileTree("${sub.buildDir}/jacoco") { include("**/*.exec") }
+        val buildDir = sub.layout.buildDirectory.get().asFile
+        fileTree("$buildDir/jacoco") { include("**/*.exec") }
     }
 
     sourceDirectories.setFrom(sourceDirs)
