@@ -29,7 +29,10 @@ class CropViewModelTest {
     @Before fun setup() {
         Dispatchers.setMain(testDispatcher)
         every { mockContext.cacheDir } returns File(System.getProperty("java.io.tmpdir")!!)
-        viewModel = CropViewModel(mockContext)
+        viewModel = CropViewModel(mockContext).also {
+            it.ioDispatcher = testDispatcher
+            it.defaultDispatcher = testDispatcher
+        }
     }
 
     @After fun tearDown() {
@@ -143,6 +146,33 @@ class CropViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.uiState.value.isProcessing).isFalse()
+    }
+
+    @Test fun `confirmCrop with valid bitmap produces a croppedPath`() = runTest {
+        val bmp = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
+        mockkStatic(BitmapFactory::class)
+        every { BitmapFactory.decodeFile(any()) } returns bmp
+
+        viewModel.loadImage("/path/img.jpg")
+        advanceUntilIdle()
+
+        viewModel.confirmCrop()
+        advanceUntilIdle()
+
+        assertThat(viewModel.uiState.value.croppedPath).isNotNull()
+    }
+
+    @Test fun `confirmCrop croppedPath is a jpg file path`() = runTest {
+        val bmp = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
+        mockkStatic(BitmapFactory::class)
+        every { BitmapFactory.decodeFile(any()) } returns bmp
+
+        viewModel.loadImage("/path/img.jpg")
+        advanceUntilIdle()
+        viewModel.confirmCrop()
+        advanceUntilIdle()
+
+        assertThat(viewModel.uiState.value.croppedPath).endsWith(".jpg")
     }
 
     // ── loadImage ──────────────────────────────────────────────────────────────

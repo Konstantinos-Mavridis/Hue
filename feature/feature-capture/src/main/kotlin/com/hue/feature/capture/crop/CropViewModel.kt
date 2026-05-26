@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,12 +38,15 @@ class CropViewModel @Inject constructor(
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
+    internal var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    internal var defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
+
     private val _uiState = MutableStateFlow(CropUiState())
     val uiState: StateFlow<CropUiState> = _uiState.asStateFlow()
 
     fun loadImage(path: String) {
         viewModelScope.launch {
-            val bitmap = withContext(Dispatchers.IO) {
+            val bitmap = withContext(ioDispatcher) {
                 BitmapFactory.decodeFile(path)
             }
             _uiState.value = _uiState.value.copy(sourcePath = path, bitmap = bitmap)
@@ -65,7 +69,7 @@ class CropViewModel @Inject constructor(
         _uiState.value = state.copy(isProcessing = true)
 
         viewModelScope.launch {
-            val result = withContext(Dispatchers.Default) {
+            val result = withContext(defaultDispatcher) {
                 val rect = state.cropRect
                 val x = (rect.left * bitmap.width).toInt().coerceIn(0, bitmap.width - 1)
                 val y = (rect.top * bitmap.height).toInt().coerceIn(0, bitmap.height - 1)
