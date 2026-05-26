@@ -9,6 +9,7 @@ import com.hue.domain.usecase.GetHistoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 data class HistoryUiState(
@@ -38,14 +39,16 @@ class HistoryViewModel @Inject constructor(
         viewModelScope.launch {
             getHistory()
                 .onStart { _uiState.update { it.copy(isLoading = true) } }
-                .catch { /* log */ }
+                .catch { err -> Timber.e(err, "Failed to load history") }
                 .collect { scans ->
+                    Timber.d("History loaded: %d scan(s)", scans.size)
                     _uiState.update { it.copy(scans = scans, isLoading = false) }
                 }
         }
     }
 
     fun setFilter(season: Season?) {
+        Timber.d("Filter set: %s", season?.name ?: "All")
         _uiState.update { it.copy(filterSeason = season) }
     }
 
@@ -54,6 +57,7 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun delete(id: Long) {
+        Timber.i("Deleting scan id=%d", id)
         viewModelScope.launch { deleteScan(id) }
     }
 }

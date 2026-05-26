@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.coil.compose)
     implementation(libs.exifinterface)
+    implementation(libs.timber)
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 sealed class ResultsUiState {
@@ -36,13 +37,23 @@ class ResultsViewModel @Inject constructor(
     val uiState: StateFlow<ResultsUiState> = _uiState.asStateFlow()
 
     fun analyse(croppedPath: String) {
+        Timber.d("Starting analysis: %s", croppedPath)
         _uiState.value = ResultsUiState.Loading
         viewModelScope.launch {
             analyseFabric(AnalysisInput(croppedPath))
                 .onSuccess { analysis ->
+                    val best = analysis.topMatches.firstOrNull()
+                    Timber.i(
+                        "Analysis success — colour: %s (%s), season: %s, ΔE: %.2f",
+                        best?.color?.name ?: "none",
+                        best?.color?.code ?: "—",
+                        analysis.season.primarySeason,
+                        best?.deltaE ?: 0.0
+                    )
                     _uiState.value = ResultsUiState.Success(analysis)
                 }
                 .onFailure { err ->
+                    Timber.e(err, "Analysis failed")
                     _uiState.value = ResultsUiState.Error(
                         err.message ?: "Analysis failed. Please try again."
                     )
@@ -63,6 +74,7 @@ class ResultsViewModel @Inject constructor(
     fun saveToHistory() {
         val current = _uiState.value as? ResultsUiState.Success ?: return
         if (current.isSaved) return
+        Timber.d("Saving scan to history: %s", current.analysis.topMatches.firstOrNull()?.color?.name)
         viewModelScope.launch {
             saveScan(current.analysis)
             _uiState.value = current.copy(isSaved = true)

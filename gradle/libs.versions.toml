@@ -28,6 +28,7 @@ robolectric             = "4.16.1"
 archCoreTesting         = "2.2.0"
 turbine                 = "1.2.1"
 material                = "1.12.0"
+timber                  = "5.0.1"
 
 [libraries]
 # AndroidX Core
@@ -96,6 +97,7 @@ arch-core-testing               = { group = "androidx.arch.core",      name = "c
 turbine                         = { group = "app.cash.turbine",         name = "turbine",                        version.ref = "turbine" }
 room-testing                    = { group = "androidx.room",            name = "room-testing",                   version.ref = "room" }
 material                        = { group = "com.google.android.material", name = "material",                      version.ref = "material" }
+timber                          = { group = "com.jakewharton.timber",      name = "timber",                        version.ref = "timber" }
 
 [plugins]
 android-application             = { id = "com.android.application",                version.ref = "agp" }

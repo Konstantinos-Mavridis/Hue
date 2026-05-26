@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.coil.compose)
+    implementation(libs.timber)
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)

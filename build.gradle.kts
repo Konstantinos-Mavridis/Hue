@@ -42,17 +42,13 @@ tasks.register<JacocoReport>("jacocoFullReport") {
     group = "verification"
     description = "Generates aggregated JaCoCo coverage report across all modules."
 
-    // Disable build caching so stale 0-coverage results are never reused.
+    // Never pull a stale 0-coverage result from the build cache.
     outputs.cacheIf { false }
 
     val testTasks = coverageModules.mapNotNull { modulePath ->
         project(modulePath).tasks.findByName("testDebugUnitTest")
     }
-
-    // dependsOn ensures tests run; executionData wires the JacocoTaskExtension
-    // destinationFile so Gradle resolves exec paths after the tasks finish.
     dependsOn(testTasks)
-    testTasks.forEach { executionData(it) }
 
     val sourceDirs = coverageModules.flatMap { modulePath ->
         val sub = project(modulePath)
@@ -76,8 +72,27 @@ tasks.register<JacocoReport>("jacocoFullReport") {
         }
     }
 
+    // Broad exec-file search: covers all known AGP output paths and handles
+    // AGP version differences in where the .exec file is written.
+    val execFiles = coverageModules.flatMap { modulePath ->
+        val sub = project(modulePath)
+        val buildDir = sub.layout.buildDirectory.get().asFile
+        fileTree(buildDir) { include("**/*.exec") }
+    }
+
     sourceDirectories.setFrom(sourceDirs)
     classDirectories.setFrom(classDirs)
+    executionData.setFrom(execFiles)
+
+    // Diagnostic: print what was found so CI logs show the actual paths.
+    doFirst {
+        val execCount = executionData.files.size
+        val classCount = classDirectories.asFileTree.files.size
+        logger.lifecycle("[jacocoFullReport] exec files : $execCount")
+        executionData.files.sortedBy { it.absolutePath }
+            .forEach { logger.lifecycle("  exec → $it (${it.length()} B)") }
+        logger.lifecycle("[jacocoFullReport] class files: $classCount")
+    }
 
     reports {
         xml.required.set(true)
