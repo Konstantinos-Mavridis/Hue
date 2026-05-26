@@ -36,10 +36,10 @@ jobs:
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
       - name: Run unit tests with coverage
-        run: gradle testDebugUnitTest jacocoFullReport --continue --stacktrace
+        run: ./gradlew testDebugUnitTest jacocoFullReport --continue --stacktrace
 
       - name: Check coverage thresholds
-        run: gradle jacocoCoverageVerification
+        run: ./gradlew jacocoCoverageVerification
 
       - name: Upload test reports
         if: always()
@@ -81,7 +81,7 @@ jobs:
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
       - name: Run lint
-        run: gradle lintDebug --continue
+        run: ./gradlew lintDebug --continue
 
       - name: Upload lint reports
         if: always()
