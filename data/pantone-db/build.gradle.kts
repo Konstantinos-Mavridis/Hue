@@ -1,8 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
     jacoco
 }
 
@@ -39,11 +39,11 @@ dependencies {
 
     implementation(libs.core.ktx)
     implementation(libs.bundles.room)
-    kapt(libs.room.compiler)
+    ksp(libs.room.compiler)
     implementation(libs.coroutines.android)
     implementation(libs.gson)
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     // Optional Pantone Connect API
     implementation(libs.retrofit)
