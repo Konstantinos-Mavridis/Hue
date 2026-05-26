@@ -27,11 +27,16 @@ class AnalyseFabricUseCase @Inject constructor(
                 val bitmap = loadBitmap(input.croppedBitmapPath)
                     ?: throw IllegalStateException("Cannot decode bitmap at ${input.croppedBitmapPath}")
 
-                // 1. Estimate scene illuminant from EXIF or heuristic
-                val illuminant = estimateIlluminant(input.croppedBitmapPath, bitmap)
+                // Downsample to ≤200 px on the longest side before any pixel processing.
+                // Camera crops can still be several megapixels; running Bradford adaptation
+                // and K-means on millions of pixels causes 10+ minute runtimes on device.
+                val analysisBitmap = downsample(bitmap, maxSide = 200)
 
-                // 2. Apply illuminant correction to all pixels
-                val correctedPixels = correctPixels(bitmap, illuminant)
+                // 1. Estimate scene illuminant from EXIF or heuristic
+                val illuminant = estimateIlluminant(input.croppedBitmapPath, analysisBitmap)
+
+                // 2. Apply illuminant correction (now only ≤ 40 000 pixels)
+                val correctedPixels = correctPixels(analysisBitmap, illuminant)
 
                 // 3. Extract dominant colour via k-means in LAB space
                 val labPixels = correctedPixels.map { ColorConverter.rgbToLab(it) }
@@ -40,7 +45,7 @@ class AnalyseFabricUseCase @Inject constructor(
                     // Still proceed but caller can surface the warning
                 }
 
-                val dominant = KMeansDominantColor.extract(bitmap, correctedPixels)
+                val dominant = KMeansDominantColor.extract(analysisBitmap, correctedPixels)
 
                 // Guard: achromatic fabric
                 if (dominant.lab.chroma < 8.0) {
@@ -76,6 +81,14 @@ class AnalyseFabricUseCase @Inject constructor(
                 )
             }
         }
+
+    private fun downsample(bitmap: Bitmap, maxSide: Int): Bitmap {
+        val scale = maxSide.toFloat() / maxOf(bitmap.width, bitmap.height)
+        if (scale >= 1f) return bitmap
+        val w = (bitmap.width  * scale).toInt().coerceAtLeast(1)
+        val h = (bitmap.height * scale).toInt().coerceAtLeast(1)
+        return Bitmap.createScaledBitmap(bitmap, w, h, true)
+    }
 
     private fun loadBitmap(path: String): Bitmap? =
         BitmapFactory.decodeFile(path)

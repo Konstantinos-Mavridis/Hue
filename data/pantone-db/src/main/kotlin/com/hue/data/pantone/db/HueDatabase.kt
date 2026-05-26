@@ -6,9 +6,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.hue.data.pantone.seeding.PantoneDatabaseSeeder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Database(
     entities = [PantoneFhiEntity::class, ScanHistoryEntity::class],
@@ -27,10 +24,10 @@ abstract class HueDatabase : RoomDatabase() {
                 .addCallback(object : Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
-                        // Seed the PANTONE FHI data on first creation
-                        CoroutineScope(Dispatchers.IO).launch {
-                            seeder.seedIfEmpty()
-                        }
+                        // Seed synchronously — seedDirect() uses the raw SupportSQLiteDatabase
+                        // handle so it never calls dbProvider.get(), avoiding a deadlock with
+                        // Dagger's singleton lock that is still held during create().
+                        seeder.seedDirect(db)
                     }
                 })
                 .fallbackToDestructiveMigration()
