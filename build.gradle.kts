@@ -38,17 +38,54 @@ val coverageModules = listOf(
     ":feature:feature-capture"
 )
 
-tasks.register<JacocoReport>("jacocoFullReport") {
-    group = "verification"
-    description = "Generates aggregated JaCoCo coverage report across all modules."
+// ── Step 1: unpack AGP 9.x / K2 Kotlin library JARs ──────────────────────
+//
+// In AGP 9.x + K2, compileDebugKotlin writes all Kotlin classes into:
+//   intermediates/compile_library_classes_jar/debug/<taskName>/classes.jar
+// JaCoCo's classDirectories requires individual .class entries, not JARs.
+// This Copy task unpacks each JAR into a flat directory that jacocoFullReport
+// can reference at configuration time (before the JARs actually exist).
+//
+// CopySpec is evaluated lazily at execution time, so doFirst can call from()
+// safely — Gradle has not yet processed the spec when doFirst runs.
+// outputs.upToDateWhen { false } ensures the task always executes (avoiding
+// any input-snapshot skipping from the lazily-added sources).
 
-    // Never pull a stale result from the build cache.
+val jacocoUnpackDir = layout.buildDirectory.dir("jacoco-unpacked-classes")
+
+val unpackKotlinClassJars = tasks.register<Copy>("unpackKotlinClassJarsForJacoco") {
+    group = "verification"
+    description = "Unpacks Kotlin library JARs for JaCoCo class-file analysis (AGP 9.x / K2)."
     outputs.cacheIf { false }
+    outputs.upToDateWhen { false }
 
     val testTasks = coverageModules.mapNotNull { modulePath ->
         project(modulePath).tasks.findByName("testDebugUnitTest")
     }
     dependsOn(testTasks)
+
+    doFirst {
+        coverageModules.forEach { modulePath ->
+            val sub = project(modulePath)
+            val buildDir = sub.layout.buildDirectory.get().asFile
+            fileTree(buildDir) {
+                include("intermediates/compile_library_classes_jar/**/*.jar")
+            }.forEach { jar ->
+                from(zipTree(jar).matching { exclude(jacocoAggregateExcludes) })
+            }
+        }
+    }
+
+    into(jacocoUnpackDir)
+}
+
+// ── Step 2: aggregate report ───────────────────────────────────────────────
+
+tasks.register<JacocoReport>("jacocoFullReport") {
+    group = "verification"
+    description = "Generates aggregated JaCoCo coverage report across all modules."
+    outputs.cacheIf { false }
+    dependsOn(unpackKotlinClassJars)
 
     val sourceDirs = coverageModules.flatMap { modulePath ->
         val sub = project(modulePath)
@@ -58,7 +95,6 @@ tasks.register<JacocoReport>("jacocoFullReport") {
         )
     }.filter { it.exists() }
 
-    // Exec files are found lazily at execution time.
     val execFiles = coverageModules.flatMap { modulePath ->
         val sub = project(modulePath)
         val buildDir = sub.layout.buildDirectory.get().asFile
@@ -68,49 +104,38 @@ tasks.register<JacocoReport>("jacocoFullReport") {
     sourceDirectories.setFrom(sourceDirs)
     executionData.setFrom(execFiles)
 
+    // classDirectories is set at configuration time.
+    // fileTree() is lazy — it resolves at execution time, by which point
+    // unpackKotlinClassJarsForJacoco has already populated jacocoUnpackDir.
+    val allClassDirs = coverageModules.flatMap { modulePath ->
+        val sub = project(modulePath)
+        val buildDir = sub.layout.buildDirectory.get().asFile
+        listOf(
+            // Java sources (Room DAOs, Hilt aggregated deps, etc.)
+            fileTree(buildDir) {
+                include("intermediates/javac/debug/**/*.class")
+                exclude(jacocoAggregateExcludes)
+            },
+            // Older AGP fallback — individual Kotlin class files
+            fileTree(buildDir) {
+                include("tmp/kotlin-classes/debug/**/*.class")
+                exclude(jacocoAggregateExcludes)
+            }
+        )
+    } + listOf(
+        // Unpacked Kotlin library JARs (populated by unpackKotlinClassJarsForJacoco)
+        fileTree(jacocoUnpackDir) { exclude(jacocoAggregateExcludes) }
+    )
+    classDirectories.setFrom(allClassDirs)
+
     reports {
         xml.required.set(true)
         html.required.set(true)
         csv.required.set(false)
     }
 
-    // classDirectories MUST be set in doFirst so that:
-    //   (a) The compiled library JARs already exist (test tasks have finished).
-    //   (b) zipTree() can unpack them; Gradle's JacocoReport only processes
-    //       individual .class entries, not JAR files directly.
-    //
-    // In AGP 9.x / K2, compileDebugKotlin writes classes straight into:
-    //   intermediates/compile_library_classes_jar/debug/<taskName>/classes.jar
-    // There are no individual .class files on disk for Kotlin sources.
+    // Diagnostic: visible in CI logs so path issues can be diagnosed quickly.
     doFirst {
-        val allClassDirs = coverageModules.flatMap { modulePath ->
-            val sub = project(modulePath)
-            val buildDir = sub.layout.buildDirectory.get().asFile
-
-            // Unpack the compiled library JARs so JaCoCo sees individual .class files.
-            val unpackedKotlin: List<FileTree> = fileTree(buildDir) {
-                include("intermediates/compile_library_classes_jar/**/*.jar")
-            }.map { jar ->
-                zipTree(jar).matching { exclude(jacocoAggregateExcludes) }
-            }
-
-            // Java source compilation outputs (Room DAOs, Hilt aggregated deps, etc.)
-            val javaClasses = fileTree(buildDir) {
-                include("intermediates/javac/debug/**/*.class")
-                exclude(jacocoAggregateExcludes)
-            }
-
-            // Older AGP fallback — individual Kotlin class files
-            val legacyKotlinClasses = fileTree(buildDir) {
-                include("tmp/kotlin-classes/debug/**/*.class")
-                exclude(jacocoAggregateExcludes)
-            }
-
-            unpackedKotlin + listOf(javaClasses, legacyKotlinClasses)
-        }
-        classDirectories.setFrom(allClassDirs)
-
-        // Diagnostic: visible in CI logs so path issues can be diagnosed quickly.
         val execCount = executionData.files.size
         val classCount = classDirectories.asFileTree.files.size
         logger.lifecycle("[jacocoFullReport] exec files  : $execCount")
@@ -123,6 +148,8 @@ tasks.register<JacocoReport>("jacocoFullReport") {
     }
 }
 
+// ── Step 3: coverage gate ──────────────────────────────────────────────────
+
 tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
     group = "verification"
     description = "Fails build if overall instruction coverage is below 70%."
@@ -132,11 +159,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
     val coverageReport = tasks.named<JacocoReport>("jacocoFullReport").get()
     executionData(coverageReport.executionData)
     sourceDirectories.setFrom(coverageReport.sourceDirectories)
-
-    // Mirror the same lazy classDirectories resolution used in jacocoFullReport.
-    doFirst {
-        classDirectories.setFrom(coverageReport.classDirectories)
-    }
+    classDirectories.setFrom(coverageReport.classDirectories)
 
     violationRules {
         rule {
