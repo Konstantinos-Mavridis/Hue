@@ -17,7 +17,7 @@ class PantoneDatabaseSeeder @Inject constructor(
      * would deadlock while Dagger's singleton lock is still held).
      */
     fun seedDirect(db: SupportSQLiteDatabase) {
-        val count = db.query("SELECT COUNT(*) FROM pantone_fhi", null)
+        val count = db.query("SELECT COUNT(*) FROM pantone_fhi", emptyArray<Any?>())
             .use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
         if (count > 0) return
 
