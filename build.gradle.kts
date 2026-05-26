@@ -42,9 +42,17 @@ tasks.register<JacocoReport>("jacocoFullReport") {
     group = "verification"
     description = "Generates aggregated JaCoCo coverage report across all modules."
 
-    dependsOn(subprojects.mapNotNull { sub ->
-        sub.tasks.findByName("testDebugUnitTest")
-    })
+    // Disable build caching so stale 0-coverage results are never reused.
+    outputs.cacheIf { false }
+
+    val testTasks = coverageModules.mapNotNull { modulePath ->
+        project(modulePath).tasks.findByName("testDebugUnitTest")
+    }
+
+    // dependsOn ensures tests run; executionData wires the JacocoTaskExtension
+    // destinationFile so Gradle resolves exec paths after the tasks finish.
+    dependsOn(testTasks)
+    testTasks.forEach { executionData(it) }
 
     val sourceDirs = coverageModules.flatMap { modulePath ->
         val sub = project(modulePath)
@@ -68,20 +76,8 @@ tasks.register<JacocoReport>("jacocoFullReport") {
         }
     }
 
-    val execFiles = coverageModules.flatMap { modulePath ->
-        val sub = project(modulePath)
-        val buildDir = sub.layout.buildDirectory.get().asFile
-        fileTree(buildDir) {
-            include(
-                "outputs/unit_test_code_coverage/**/*.exec",
-                "jacoco/**/*.exec"
-            )
-        }
-    }
-
     sourceDirectories.setFrom(sourceDirs)
     classDirectories.setFrom(classDirs)
-    executionData.setFrom(execFiles)
 
     reports {
         xml.required.set(true)
@@ -94,6 +90,8 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
     group = "verification"
     description = "Fails build if overall instruction coverage is below 70%."
     dependsOn("jacocoFullReport")
+
+    outputs.cacheIf { false }
 
     val coverageReport = tasks.named<JacocoReport>("jacocoFullReport").get()
     executionData(coverageReport.executionData)
