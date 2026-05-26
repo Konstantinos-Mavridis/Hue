@@ -12,9 +12,6 @@ on:
         type: choice
         options: [ debug, release ]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   # ── Debug APK (always available, no signing required) ────────────────────
   build-debug-apk:
