@@ -19,6 +19,7 @@ android {
 dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.bundles.compose)
+    implementation(libs.compose.ui.text.google.fonts)
     implementation(libs.core.ktx)
     api(libs.compose.material3)
     implementation(project(":core:core-color"))
