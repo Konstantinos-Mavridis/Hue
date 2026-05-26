@@ -62,6 +62,7 @@ dependencies {
     testImplementation(libs.coroutines.test)
     testImplementation(libs.turbine)
     testImplementation(libs.arch.core.testing)
+    testImplementation(libs.robolectric)
     androidTestImplementation(libs.junit.ext)
     debugImplementation(libs.compose.ui.tooling)
 }
